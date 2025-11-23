@@ -17,6 +17,123 @@ class AIService {
     
     private init() {}
     
+    func fetchAvailableModels(for service: AIServiceType) async throws -> [String] {
+        switch service {
+        case .ollama:
+            return try await fetchOllamaModels()
+        case .mlx:
+            return try await fetchMLXModels()
+        case .openai:
+            return try await fetchOpenAIModels()
+        case .mistral:
+            return try await fetchMistralModels()
+        }
+    }
+    
+    private func fetchOllamaModels() async throws -> [String] {
+        let url = URL(string: "\(ollamaBaseURL)/api/tags")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            return [] // Return empty if Ollama is not running
+        }
+        
+        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let models = json["models"] as? [[String: Any]] {
+            return models.compactMap { model in
+                model["name"] as? String
+            }
+        }
+        
+        return []
+    }
+    
+    private func fetchMLXModels() async throws -> [String] {
+        let url = URL(string: "\(mlxBaseURL)/v1/models")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            return [] // Return empty if MLX is not running
+        }
+        
+        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let models = json["data"] as? [[String: Any]] {
+            return models.compactMap { model in
+                model["id"] as? String
+            }
+        }
+        
+        return []
+    }
+    
+    private func fetchOpenAIModels() async throws -> [String] {
+        guard let apiKey = openAIAPIKey ?? ProcessInfo.processInfo.environment["OPENAI_API_KEY"] else {
+            return [] // Return empty if no API key
+        }
+        
+        let url = URL(string: "https://api.openai.com/v1/models")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            return []
+        }
+        
+        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let models = json["data"] as? [[String: Any]] {
+            // Filter for chat models only
+            return models.compactMap { model in
+                guard let id = model["id"] as? String else { return nil }
+                // Only include chat completion models
+                if id.contains("gpt") || id.contains("o1") || id.contains("chat") {
+                    return id
+                }
+                return nil
+            }.sorted()
+        }
+        
+        return []
+    }
+    
+    private func fetchMistralModels() async throws -> [String] {
+        guard let apiKey = mistralAPIKey ?? ProcessInfo.processInfo.environment["MISTRAL_API_KEY"] else {
+            return [] // Return empty if no API key
+        }
+        
+        let url = URL(string: "https://api.mistral.ai/v1/models")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            return []
+        }
+        
+        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let models = json["data"] as? [[String: Any]] {
+            return models.compactMap { model in
+                model["id"] as? String
+            }.sorted()
+        }
+        
+        return []
+    }
+    
     func generateText(
         prompt: String,
         context: String,
