@@ -11,7 +11,20 @@ struct PromptInputView: View {
     @State private var showCustomModel: Bool = false
     
     var body: some View {
-        HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: 11))
+                    .foregroundColor(.purple)
+                Text("AI Context-Aware Prompt")
+                    .font(.custom("Courier", size: 11))
+                    .foregroundColor(.secondary)
+            }
+            
+            HStack(spacing: 12) {
+                Spacer()
+                    .frame(width: 0) // 20% offset will be handled by parent padding
+                
                 TextField("Enter your prompt...", text: $promptText, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .font(.custom("Courier", size: 14))
@@ -37,6 +50,7 @@ struct PromptInputView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(promptText.isEmpty || isGenerating)
                 .frame(width: 44, height: 44)
+            }
         }
         .padding(20)
         .background(
