@@ -14,16 +14,24 @@ struct ContentView: View {
     @State private var writingModeContent: String = ""
     
     var body: some View {
-        VStack(spacing: 0) {
-            MenuBarView(viewModel: viewModel)
-            
-            ZStack {
+        ZStack {
                 Color(NSColor.textBackgroundColor)
                     .ignoresSafeArea()
                 
                 GeometryReader { geometry in
                     NodeCanvasView(viewModel: viewModel)
                         .frame(width: geometry.size.width, height: geometry.size.height)
+                    
+                    // Floating Add Node Button
+                    VStack {
+                        HStack {
+                            Spacer()
+                            AddNodeButton(viewModel: viewModel)
+                                .padding(.top, 20)
+                                .padding(.trailing, 20)
+                        }
+                        Spacer()
+                    }
                     
                     // Central Prompt Input
                     VStack {
@@ -66,10 +74,10 @@ struct ContentView: View {
                         }
                     )
                 }
-            }
         }
         .font(.custom("Courier", size: 14))
         .focusable()
+        .environmentObject(viewModel)
         .onAppear {
             // Ensure app has focus when view appears
             DispatchQueue.main.async {
@@ -99,6 +107,24 @@ struct ContentView: View {
                 writingModeNodeId = nodeId
                 writingModeContent = content
                 showingWritingMode = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NewBook"))) { _ in
+            viewModel.newBook()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenBookMenu"))) { _ in
+            handleOpenBook()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SaveBook"))) { _ in
+            handleSave()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SaveBookAs"))) { _ in
+            handleSaveAs()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("AddNode"))) { notification in
+            if let category = notification.userInfo?["category"] as? NodeCategory {
+                let center = CGPoint(x: 600, y: 400)
+                viewModel.addNode(title: "New \(category.rawValue.capitalized)", category: category, at: center)
             }
         }
         .alert("Error", isPresented: .constant(errorMessage != nil)) {
@@ -146,6 +172,49 @@ struct ContentView: View {
                     isGenerating = false
                 }
             }
+        }
+    }
+    
+    private func handleOpenBook() {
+        guard let url = BookService.shared.showOpenPanel() else { return }
+        do {
+            let book = try BookService.shared.loadBook(from: url)
+            viewModel.loadBook(book)
+            viewModel.currentBookURL = url
+            if let fileName = url.deletingPathExtension().lastPathComponent as String? {
+                viewModel.bookTitle = fileName
+            }
+        } catch {
+            errorMessage = "Failed to open book: \(error.localizedDescription)"
+        }
+    }
+    
+    private func handleSave() {
+        if let url = viewModel.currentBookURL {
+            do {
+                let book = viewModel.createBook()
+                try BookService.shared.saveBook(book, to: url)
+                viewModel.hasUnsavedChanges = false
+            } catch {
+                errorMessage = "Failed to save book: \(error.localizedDescription)"
+            }
+        } else {
+            handleSaveAs()
+        }
+    }
+    
+    private func handleSaveAs() {
+        guard let url = BookService.shared.showSavePanel(title: "Save Book") else { return }
+        do {
+            let book = viewModel.createBook()
+            try BookService.shared.saveBook(book, to: url)
+            viewModel.currentBookURL = url
+            if let fileName = url.deletingPathExtension().lastPathComponent as String? {
+                viewModel.bookTitle = fileName
+            }
+            viewModel.hasUnsavedChanges = false
+        } catch {
+            errorMessage = "Failed to save book: \(error.localizedDescription)"
         }
     }
 }

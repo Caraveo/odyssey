@@ -26,6 +26,66 @@ struct OdysseyApp: App {
         .windowToolbarStyle(.unified)
         .commands {
             CommandGroup(replacing: .newItem) {}
+            
+            // File Menu
+            CommandMenu("File") {
+                Button("New Book") {
+                    NotificationCenter.default.post(name: NSNotification.Name("NewBook"), object: nil)
+                }
+                .keyboardShortcut("n", modifiers: .command)
+                
+                Button("Open Book...") {
+                    NotificationCenter.default.post(name: NSNotification.Name("OpenBookMenu"), object: nil)
+                }
+                .keyboardShortcut("o", modifiers: .command)
+                
+                Divider()
+                
+                Button("Save") {
+                    NotificationCenter.default.post(name: NSNotification.Name("SaveBook"), object: nil)
+                }
+                .keyboardShortcut("s", modifiers: .command)
+                
+                Button("Save As...") {
+                    NotificationCenter.default.post(name: NSNotification.Name("SaveBookAs"), object: nil)
+                }
+                .keyboardShortcut("s", modifiers: [.command, .shift])
+            }
+            
+            // Node Menu
+            CommandMenu("Node") {
+                Button("Add Character") {
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("AddNode"),
+                        object: nil,
+                        userInfo: ["category": NodeCategory.character]
+                    )
+                }
+                
+                Button("Add Plot") {
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("AddNode"),
+                        object: nil,
+                        userInfo: ["category": NodeCategory.plot]
+                    )
+                }
+                
+                Button("Add Conflict") {
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("AddNode"),
+                        object: nil,
+                        userInfo: ["category": NodeCategory.conflict]
+                    )
+                }
+                
+                Button("Add Concept") {
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("AddNode"),
+                        object: nil,
+                        userInfo: ["category": NodeCategory.concept]
+                    )
+                }
+            }
         }
     }
 }
