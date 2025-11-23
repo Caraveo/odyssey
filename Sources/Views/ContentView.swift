@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct ContentView: View {
     @StateObject private var viewModel = NodeCanvasViewModel()
@@ -50,6 +51,16 @@ struct ContentView: View {
             }
         }
         .font(.custom("Courier", size: 14))
+        .focusable()
+        .onAppear {
+            // Ensure app has focus when view appears
+            DispatchQueue.main.async {
+                NSApp.activate(ignoringOtherApps: true)
+                if let window = NSApplication.shared.windows.first {
+                    window.makeKeyAndOrderFront(nil)
+                }
+            }
+        }
         .alert("Error", isPresented: .constant(errorMessage != nil)) {
             Button("OK") {
                 errorMessage = nil
