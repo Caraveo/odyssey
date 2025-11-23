@@ -45,6 +45,7 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
     case prophecy
     case quest
     case transformation
+    case prompt
     
     var id: String { rawValue }
     
@@ -149,6 +150,8 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
             return Color(red: 0.8, green: 0.5, blue: 0.2)
         case .transformation:
             return Color(red: 0.3, green: 0.7, blue: 0.8)
+        case .prompt:
+            return .black
         }
     }
     
@@ -240,6 +243,8 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
             return "map.circle.fill"
         case .transformation:
             return "arrow.triangle.2.circlepath"
+        case .prompt:
+            return "text.bubble.fill"
         }
     }
 }

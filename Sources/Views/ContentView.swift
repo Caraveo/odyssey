@@ -239,17 +239,25 @@ struct ContentView: View {
     
     private func generateContent() {
         guard !promptText.isEmpty else { return }
-        guard let selectedNodeId = viewModel.selectedNodeId else {
-            errorMessage = "Please select a node first"
-            return
-        }
         
         isGenerating = true
         errorMessage = nil
         
         Task {
             do {
-                let context = viewModel.getContextForPrompt()
+                let context: String
+                let selectedNodeId: UUID?
+                
+                if let nodeId = viewModel.selectedNodeId {
+                    // Use context from selected node
+                    context = viewModel.getContextForPrompt()
+                    selectedNodeId = nodeId
+                } else {
+                    // No node selected - create a new prompt node
+                    context = "Generate creative content based on the following prompt."
+                    selectedNodeId = nil
+                }
+                
                 let response = try await AIService.shared.generateText(
                     prompt: promptText,
                     context: context,
@@ -260,8 +268,35 @@ struct ContentView: View {
                 await MainActor.run {
                     isGenerating = false
                     
-                    // Store AI results in the selected node
-                    viewModel.updateNode(selectedNodeId, aiResults: response)
+                    if let nodeId = selectedNodeId {
+                        // Store AI results in the selected node
+                        viewModel.updateNode(nodeId, aiResults: response)
+                    } else {
+                        // Create a new prompt node with the AI response
+                        let nodeTitle = promptText.count > 50 ? String(promptText.prefix(47)) + "..." : promptText
+                        
+                        // Position new node in center of canvas (adjust based on existing nodes)
+                        let existingNodes = viewModel.nodes
+                        let centerX: CGFloat = 600
+                        let centerY: CGFloat = 400
+                        
+                        // Offset slightly if there are existing nodes to avoid overlap
+                        let offsetX = CGFloat(existingNodes.count % 5) * 50
+                        let offsetY = CGFloat((existingNodes.count / 5) % 5) * 50
+                        let position = CGPoint(x: centerX + offsetX, y: centerY + offsetY)
+                        
+                        viewModel.addNode(
+                            title: nodeTitle,
+                            category: .prompt,
+                            at: position
+                        )
+                        
+                        // Get the newly created node and set its content to the AI response
+                        if let newNode = viewModel.nodes.last {
+                            viewModel.updateNode(newNode.id, content: response)
+                            viewModel.selectNode(newNode.id)
+                        }
+                    }
                     
                     // Clear prompt after successful generation
                     promptText = ""
