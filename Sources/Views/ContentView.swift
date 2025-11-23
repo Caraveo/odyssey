@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var showingWritingMode: Bool = false
     @State private var writingModeNodeId: UUID?
     @State private var writingModeContent: String = ""
+    @State private var showingSettings: Bool = false
     
     var body: some View {
         ZStack {
@@ -124,6 +125,12 @@ struct ContentView: View {
                 let center = CGPoint(x: 600, y: 400)
                 viewModel.addNode(title: "New \(category.rawValue.capitalized)", category: category, at: center)
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowSettings"))) { _ in
+            showingSettings = true
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView(selectedAIService: $selectedAIService, aiModel: $aiModel)
         }
         .alert("Error", isPresented: .constant(errorMessage != nil)) {
             Button("OK") {

@@ -27,8 +27,8 @@ struct OdysseyApp: App {
         .commands {
             CommandGroup(replacing: .newItem) {}
             
-            // File Menu
-            CommandMenu("File") {
+            // File Menu (standard position)
+            CommandGroup(after: .newItem) {
                 Button("New Book") {
                     NotificationCenter.default.post(name: NSNotification.Name("NewBook"), object: nil)
                 }
@@ -50,6 +50,14 @@ struct OdysseyApp: App {
                     NotificationCenter.default.post(name: NSNotification.Name("SaveBookAs"), object: nil)
                 }
                 .keyboardShortcut("s", modifiers: [.command, .shift])
+            }
+            
+            // Settings Menu (under Odyssey menu)
+            CommandGroup(after: .appSettings) {
+                Button("AI Settings...") {
+                    NotificationCenter.default.post(name: NSNotification.Name("ShowSettings"), object: nil)
+                }
+                .keyboardShortcut(",", modifiers: .command)
             }
             
             // Node Menu
