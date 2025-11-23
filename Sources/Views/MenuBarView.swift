@@ -167,7 +167,7 @@ struct AddNodeSheet: View {
                 Text("Category")
                     .font(.custom("Courier", size: 12))
                 
-                Picker("Category", selection: $category) {
+                Picker(selection: $category) {
                     ForEach(NodeCategory.allCases) { cat in
                         Label {
                             Text(cat.displayName)
@@ -177,6 +177,8 @@ struct AddNodeSheet: View {
                         }
                         .tag(cat)
                     }
+                } label: {
+                    EmptyView()
                 }
                 .pickerStyle(.menu)
                 .frame(maxWidth: .infinity, alignment: .leading)
