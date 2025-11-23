@@ -14,7 +14,12 @@ struct ContentView: View {
     @State private var showingSettings: Bool = false
     
     var body: some View {
-        ZStack {
+        HStack(spacing: 0) {
+            // Node Hierarchy List (Left Side)
+            NodeHierarchyView(viewModel: viewModel)
+            
+            // Main Canvas Area
+            ZStack {
                 Color(NSColor.textBackgroundColor)
                     .ignoresSafeArea()
                 
@@ -96,6 +101,7 @@ struct ContentView: View {
                         }
                     )
                 }
+            }
         }
         .font(.custom("Courier", size: 14))
         .focusable()
