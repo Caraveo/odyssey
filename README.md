@@ -2,6 +2,11 @@
 
 A beautiful macOS SwiftUI writing app with a node-based canvas for organizing and creating original works using AI.
 
+## Screenshots
+
+![Focus](Focus.png)
+![Book](Book.png)
+
 ## Features
 
 - **Node-Based Canvas**: Create and link nodes representing characters, plots, conflicts, and concepts
@@ -84,4 +89,5 @@ Odyssey/
 ## License
 
 This project is open source and available for personal use.
+
 

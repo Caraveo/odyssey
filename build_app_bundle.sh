@@ -104,3 +104,4 @@ echo "App bundle created: ${APP_BUNDLE}"
 echo "You can now run it with: open ${APP_BUNDLE}"
 echo "Or double-click it in Finder!"
 
+

@@ -39,3 +39,4 @@ echo "Created $ICNS_FILE successfully!"
 echo "To use this icon, you'll need to create an app bundle structure."
 echo "For now, the icon file is ready at: $ICNS_FILE"
 
+
