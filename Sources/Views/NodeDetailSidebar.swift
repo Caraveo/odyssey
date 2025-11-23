@@ -152,13 +152,16 @@ struct NodeDetailSidebar: View {
                         
                         HStack(spacing: 8) {
                             Button {
-                                editingContent = node.aiResults
-                                viewModel.updateNode(node.id, content: node.aiResults)
+                                // Append AI results to existing content
+                                let separator = editingContent.isEmpty ? "" : "\n\n"
+                                let newContent = editingContent + separator + node.aiResults
+                                editingContent = newContent
+                                viewModel.updateNode(node.id, content: newContent)
                             } label: {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "arrow.down.circle.fill")
+                                    Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 11))
-                                    Text("Use this content")
+                                    Text("Keep this Content")
                                         .font(.custom("Courier", size: 12))
                                 }
                             }
