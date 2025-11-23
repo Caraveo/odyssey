@@ -101,6 +101,13 @@ struct ContentView: View {
         .focusable()
         .environmentObject(viewModel)
         .onAppear {
+            // Ensure appearance is applied (fallback if delegate didn't run)
+            let savedDarkMode = UserDefaults.standard.bool(forKey: "darkMode")
+            if savedDarkMode {
+                NSApp.appearance = NSAppearance(named: .darkAqua)
+            } else {
+                NSApp.appearance = NSAppearance(named: .aqua)
+            }
             // Ensure app has focus when view appears
             DispatchQueue.main.async {
                 NSApp.activate(ignoringOtherApps: true)
