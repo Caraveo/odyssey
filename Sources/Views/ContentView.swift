@@ -50,11 +50,12 @@ struct ContentView: View {
                 }
                 
                 // Sidebar for node details
-                if viewModel.selectedNode != nil && !showingWritingMode {
+                if let selectedNode = viewModel.selectedNode, !showingWritingMode {
                     NodeDetailSidebar(
-                        node: viewModel.selectedNode!,
+                        node: selectedNode,
                         viewModel: viewModel
                     )
+                    .id(selectedNode.id) // Force re-creation when node changes
                 }
                 
                 // Full-screen writing mode

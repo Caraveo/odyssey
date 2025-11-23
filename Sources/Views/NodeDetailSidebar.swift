@@ -5,6 +5,7 @@ struct NodeDetailSidebar: View {
     @ObservedObject var viewModel: NodeCanvasViewModel
     @State private var editingContent: String = ""
     @State private var editingTitle: String = ""
+    @State private var isUpdating: Bool = false
     
     var body: some View {
         HStack {
@@ -40,6 +41,7 @@ struct NodeDetailSidebar: View {
                         .textFieldStyle(.roundedBorder)
                         .font(.custom("Courier", size: 14))
                         .onChange(of: editingTitle) { newValue in
+                            guard !isUpdating else { return }
                             viewModel.updateNode(node.id, title: newValue)
                         }
                 }
@@ -87,6 +89,7 @@ struct NodeDetailSidebar: View {
                                 .stroke(Color(NSColor.separatorColor), lineWidth: 1)
                         )
                         .onChange(of: editingContent) { newValue in
+                            guard !isUpdating else { return }
                             viewModel.updateNode(node.id, content: newValue)
                         }
                 }
@@ -165,14 +168,17 @@ struct NodeDetailSidebar: View {
             .shadow(color: Color.black.opacity(0.1), radius: 8, x: -4, y: 0)
         }
         .onAppear {
+            isUpdating = true
             editingTitle = node.title
             editingContent = node.content
+            isUpdating = false
         }
-        .onChange(of: node.title) { _ in
+        .onChange(of: node.id) { _ in
+            // Update local state when a different node is selected
+            isUpdating = true
             editingTitle = node.title
-        }
-        .onChange(of: node.content) { _ in
             editingContent = node.content
+            isUpdating = false
         }
     }
 }
