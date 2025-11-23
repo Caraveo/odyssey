@@ -58,17 +58,31 @@ struct NodeDetailSidebar: View {
                 
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Content")
-                        .font(.custom("Courier", size: 12))
-                        .foregroundColor(.secondary)
+                    HStack {
+                        Text("Content")
+                            .font(.custom("Courier", size: 12))
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Button {
+                            // Open full-screen writing mode
+                            NotificationCenter.default.post(
+                                name: NSNotification.Name("OpenWritingMode"),
+                                object: nil,
+                                userInfo: ["nodeId": node.id, "content": editingContent]
+                            )
+                        } label: {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Full-screen writing mode")
+                    }
                     
-                    TextEditor(text: $editingContent)
-                        .font(.custom("Courier", size: 14))
-                        .lineSpacing(1.2)
-                        .padding(.horizontal, 1.5)
-                        .frame(height: 300)
-                        .scrollContentBackground(.hidden)
-                        .background(Color(NSColor.textBackgroundColor))
+                    WritingView(text: $editingContent)
+                        .frame(height: 400)
                         .overlay(
                             RoundedRectangle(cornerRadius: 4)
                                 .stroke(Color(NSColor.separatorColor), lineWidth: 1)

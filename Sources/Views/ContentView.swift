@@ -9,6 +9,9 @@ struct ContentView: View {
     @State private var isGenerating: Bool = false
     @State private var generatedText: String = ""
     @State private var errorMessage: String?
+    @State private var showingWritingMode: Bool = false
+    @State private var writingModeNodeId: UUID?
+    @State private var writingModeContent: String = ""
     
     var body: some View {
         VStack(spacing: 0) {
@@ -41,11 +44,26 @@ struct ContentView: View {
                 }
                 
                 // Sidebar for node details
-                if viewModel.selectedNode != nil {
+                if viewModel.selectedNode != nil && !showingWritingMode {
                     NodeDetailSidebar(
                         node: viewModel.selectedNode!,
                         viewModel: viewModel,
                         generatedText: $generatedText
+                    )
+                }
+                
+                // Full-screen writing mode
+                if showingWritingMode {
+                    WritingModeView(
+                        content: $writingModeContent,
+                        nodeId: writingModeNodeId,
+                        viewModel: viewModel,
+                        onClose: {
+                            showingWritingMode = false
+                            if let nodeId = writingModeNodeId {
+                                viewModel.updateNode(nodeId, content: writingModeContent)
+                            }
+                        }
                     )
                 }
             }
@@ -73,6 +91,14 @@ struct ContentView: View {
                 } catch {
                     errorMessage = "Failed to open book: \(error.localizedDescription)"
                 }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenWritingMode"))) { notification in
+            if let nodeId = notification.userInfo?["nodeId"] as? UUID,
+               let content = notification.userInfo?["content"] as? String {
+                writingModeNodeId = nodeId
+                writingModeContent = content
+                showingWritingMode = true
             }
         }
         .alert("Error", isPresented: .constant(errorMessage != nil)) {
