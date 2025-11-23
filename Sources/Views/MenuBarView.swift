@@ -168,10 +168,17 @@ struct AddNodeSheet: View {
                 
                 Picker("Category", selection: $category) {
                     ForEach(NodeCategory.allCases) { cat in
-                        Text(cat.rawValue.capitalized).tag(cat)
+                        Label {
+                            Text(cat.displayName)
+                        } icon: {
+                            Image(systemName: cat.icon)
+                                .foregroundColor(cat.color)
+                        }
+                        .tag(cat)
                     }
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             HStack {

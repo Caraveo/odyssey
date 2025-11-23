@@ -62,37 +62,10 @@ struct OdysseyApp: App {
             
             // Node Menu
             CommandMenu("Node") {
-                Button("Add Character") {
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("AddNode"),
-                        object: nil,
-                        userInfo: ["category": NodeCategory.character]
-                    )
+                Button("Add Node...") {
+                    NotificationCenter.default.post(name: NSNotification.Name("ShowAddNode"), object: nil)
                 }
-                
-                Button("Add Plot") {
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("AddNode"),
-                        object: nil,
-                        userInfo: ["category": NodeCategory.plot]
-                    )
-                }
-                
-                Button("Add Conflict") {
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("AddNode"),
-                        object: nil,
-                        userInfo: ["category": NodeCategory.conflict]
-                    )
-                }
-                
-                Button("Add Concept") {
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("AddNode"),
-                        object: nil,
-                        userInfo: ["category": NodeCategory.concept]
-                    )
-                }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
             }
         }
     }

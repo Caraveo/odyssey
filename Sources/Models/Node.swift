@@ -6,8 +6,33 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
     case plot
     case conflict
     case concept
+    case theme
+    case setting
+    case scene
+    case dialogue
+    case symbol
+    case motif
+    case foreshadowing
+    case resolution
+    case climax
+    case exposition
+    case risingAction
+    case fallingAction
+    case worldbuilding
+    case subplot
     
     var id: String { rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .risingAction:
+            return "Rising Action"
+        case .fallingAction:
+            return "Falling Action"
+        default:
+            return rawValue.capitalized
+        }
+    }
     
     var color: Color {
         switch self {
@@ -19,6 +44,34 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
             return .red
         case .concept:
             return .green
+        case .theme:
+            return .orange
+        case .setting:
+            return .brown
+        case .scene:
+            return .cyan
+        case .dialogue:
+            return .yellow
+        case .symbol:
+            return .pink
+        case .motif:
+            return .indigo
+        case .foreshadowing:
+            return .teal
+        case .resolution:
+            return .mint
+        case .climax:
+            return Color(red: 0.8, green: 0.2, blue: 0.4)
+        case .exposition:
+            return .gray
+        case .risingAction:
+            return Color(red: 0.9, green: 0.5, blue: 0.1)
+        case .fallingAction:
+            return Color(red: 0.5, green: 0.3, blue: 0.7)
+        case .worldbuilding:
+            return Color(red: 0.2, green: 0.6, blue: 0.8)
+        case .subplot:
+            return Color(red: 0.7, green: 0.4, blue: 0.9)
         }
     }
     
@@ -32,6 +85,34 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
             return "exclamationmark.triangle.fill"
         case .concept:
             return "lightbulb.fill"
+        case .theme:
+            return "theatermasks.fill"
+        case .setting:
+            return "map.fill"
+        case .scene:
+            return "camera.fill"
+        case .dialogue:
+            return "bubble.left.and.bubble.right.fill"
+        case .symbol:
+            return "star.fill"
+        case .motif:
+            return "repeat.circle.fill"
+        case .foreshadowing:
+            return "eye.fill"
+        case .resolution:
+            return "checkmark.circle.fill"
+        case .climax:
+            return "flame.fill"
+        case .exposition:
+            return "doc.text.fill"
+        case .risingAction:
+            return "arrow.up.circle.fill"
+        case .fallingAction:
+            return "arrow.down.circle.fill"
+        case .worldbuilding:
+            return "globe.americas.fill"
+        case .subplot:
+            return "list.bullet.rectangle.fill"
         }
     }
 }
