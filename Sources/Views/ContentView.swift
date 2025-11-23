@@ -199,7 +199,14 @@ struct ContentView: View {
                let content = notification.userInfo?["content"] as? String {
                 writingModeNodeId = nodeId
                 writingModeContent = content
+                isNodeListCollapsed = true // Collapse node list when entering focus mode
                 showingWritingMode = true
+            }
+        }
+        .onChange(of: showingWritingMode) { newValue in
+            if newValue {
+                // Collapse node list when entering writing mode
+                isNodeListCollapsed = true
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NewBook"))) { _ in
