@@ -24,11 +24,19 @@ class BookService {
         let savePanel = NSSavePanel()
         savePanel.title = title
         savePanel.allowedContentTypes = [.book]
-        savePanel.nameFieldStringValue = "Untitled Book"
+        savePanel.nameFieldStringValue = "Untitled Book.book"
         savePanel.canCreateDirectories = true
+        savePanel.allowsOtherFileTypes = false
         
         let response = savePanel.runModal()
-        return response == .OK ? savePanel.url : nil
+        guard response == .OK, var url = savePanel.url else { return nil }
+        
+        // Ensure .book extension is present
+        if url.pathExtension != "book" {
+            url = url.deletingPathExtension().appendingPathExtension("book")
+        }
+        
+        return url
     }
     
     func showOpenPanel() -> URL? {
