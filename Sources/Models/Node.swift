@@ -20,6 +20,31 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
     case fallingAction
     case worldbuilding
     case subplot
+    case protagonist
+    case antagonist
+    case narrator
+    case pointOfView
+    case tone
+    case mood
+    case atmosphere
+    case backstory
+    case flashback
+    case metaphor
+    case irony
+    case tension
+    case pacing
+    case voice
+    case style
+    case genre
+    case trope
+    case archetype
+    case emotion
+    case relationship
+    case memory
+    case dream
+    case prophecy
+    case quest
+    case transformation
     
     var id: String { rawValue }
     
@@ -29,6 +54,8 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
             return "Rising Action"
         case .fallingAction:
             return "Falling Action"
+        case .pointOfView:
+            return "Point of View"
         default:
             return rawValue.capitalized
         }
@@ -72,6 +99,56 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
             return Color(red: 0.2, green: 0.6, blue: 0.8)
         case .subplot:
             return Color(red: 0.7, green: 0.4, blue: 0.9)
+        case .protagonist:
+            return Color(red: 0.1, green: 0.5, blue: 0.9)
+        case .antagonist:
+            return Color(red: 0.9, green: 0.1, blue: 0.2)
+        case .narrator:
+            return Color(red: 0.6, green: 0.4, blue: 0.8)
+        case .pointOfView:
+            return Color(red: 0.3, green: 0.7, blue: 0.5)
+        case .tone:
+            return Color(red: 0.8, green: 0.6, blue: 0.2)
+        case .mood:
+            return Color(red: 0.5, green: 0.3, blue: 0.6)
+        case .atmosphere:
+            return Color(red: 0.4, green: 0.5, blue: 0.7)
+        case .backstory:
+            return Color(red: 0.7, green: 0.5, blue: 0.3)
+        case .flashback:
+            return Color(red: 0.6, green: 0.7, blue: 0.4)
+        case .metaphor:
+            return Color(red: 0.9, green: 0.4, blue: 0.6)
+        case .irony:
+            return Color(red: 0.4, green: 0.8, blue: 0.9)
+        case .tension:
+            return Color(red: 0.9, green: 0.3, blue: 0.3)
+        case .pacing:
+            return Color(red: 0.5, green: 0.8, blue: 0.3)
+        case .voice:
+            return Color(red: 0.8, green: 0.4, blue: 0.8)
+        case .style:
+            return Color(red: 0.3, green: 0.6, blue: 0.9)
+        case .genre:
+            return Color(red: 0.9, green: 0.7, blue: 0.2)
+        case .trope:
+            return Color(red: 0.6, green: 0.2, blue: 0.8)
+        case .archetype:
+            return Color(red: 0.2, green: 0.8, blue: 0.6)
+        case .emotion:
+            return Color(red: 0.9, green: 0.5, blue: 0.4)
+        case .relationship:
+            return Color(red: 0.4, green: 0.6, blue: 0.9)
+        case .memory:
+            return Color(red: 0.7, green: 0.6, blue: 0.8)
+        case .dream:
+            return Color(red: 0.5, green: 0.4, blue: 0.9)
+        case .prophecy:
+            return Color(red: 0.9, green: 0.8, blue: 0.3)
+        case .quest:
+            return Color(red: 0.8, green: 0.5, blue: 0.2)
+        case .transformation:
+            return Color(red: 0.3, green: 0.7, blue: 0.8)
         }
     }
     
@@ -113,6 +190,56 @@ enum NodeCategory: String, CaseIterable, Identifiable, Codable {
             return "globe.americas.fill"
         case .subplot:
             return "list.bullet.rectangle.fill"
+        case .protagonist:
+            return "person.crop.circle.fill"
+        case .antagonist:
+            return "person.crop.circle.badge.minus.fill"
+        case .narrator:
+            return "person.wave.2.fill"
+        case .pointOfView:
+            return "eye.circle.fill"
+        case .tone:
+            return "music.note.fill"
+        case .mood:
+            return "cloud.fill"
+        case .atmosphere:
+            return "moon.fill"
+        case .backstory:
+            return "clock.arrow.circlepath.fill"
+        case .flashback:
+            return "arrow.counterclockwise.circle.fill"
+        case .metaphor:
+            return "sparkles"
+        case .irony:
+            return "arrow.triangle.2.circlepath.circle.fill"
+        case .tension:
+            return "bolt.fill"
+        case .pacing:
+            return "speedometer"
+        case .voice:
+            return "mic.fill"
+        case .style:
+            return "paintbrush.fill"
+        case .genre:
+            return "book.closed.fill"
+        case .trope:
+            return "repeat.1.circle.fill"
+        case .archetype:
+            return "person.3.fill"
+        case .emotion:
+            return "heart.fill"
+        case .relationship:
+            return "person.2.fill"
+        case .memory:
+            return "brain.head.profile"
+        case .dream:
+            return "moon.zzz.fill"
+        case .prophecy:
+            return "crystal.ball.fill"
+        case .quest:
+            return "map.circle.fill"
+        case .transformation:
+            return "arrow.triangle.2.circlepath"
         }
     }
 }
