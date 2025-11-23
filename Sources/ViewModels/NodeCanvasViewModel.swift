@@ -45,7 +45,7 @@ class NodeCanvasViewModel: ObservableObject {
         markAsChanged()
     }
     
-    func updateNode(_ nodeId: UUID, title: String? = nil, content: String? = nil) {
+    func updateNode(_ nodeId: UUID, title: String? = nil, content: String? = nil, aiResults: String? = nil) {
         guard let index = nodes.firstIndex(where: { $0.id == nodeId }) else { return }
         if let title = title {
             nodes[index].title = title
@@ -53,6 +53,10 @@ class NodeCanvasViewModel: ObservableObject {
         }
         if let content = content {
             nodes[index].content = content
+            markAsChanged()
+        }
+        if let aiResults = aiResults {
+            nodes[index].aiResults = aiResults
             markAsChanged()
         }
     }

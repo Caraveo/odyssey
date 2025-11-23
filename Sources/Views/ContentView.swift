@@ -4,10 +4,9 @@ import AppKit
 struct ContentView: View {
     @StateObject private var viewModel = NodeCanvasViewModel()
     @State private var promptText: String = ""
-    @State private var selectedAIService: AIServiceType = .ollama
-    @State private var aiModel: String = "mistral"
+    @State private var selectedAIService: AIServiceType = .mlx
+    @State private var aiModel: String = "mistral-7b"
     @State private var isGenerating: Bool = false
-    @State private var generatedText: String = ""
     @State private var errorMessage: String?
     @State private var showingWritingMode: Bool = false
     @State private var writingModeNodeId: UUID?
@@ -33,7 +32,7 @@ struct ContentView: View {
                         Spacer()
                     }
                     
-                    // Central Prompt Input
+                    // Bottom Prompt Input - Fixed at bottom
                     VStack {
                         Spacer()
                         
@@ -44,19 +43,17 @@ struct ContentView: View {
                             isGenerating: $isGenerating,
                             onGenerate: generateContent
                         )
-                        .padding(.bottom, 40)
-                        
-                        Spacer()
                     }
-                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
+                    .padding(.bottom, 20)
+                    .padding(.horizontal, 20)
                 }
                 
                 // Sidebar for node details
                 if viewModel.selectedNode != nil && !showingWritingMode {
                     NodeDetailSidebar(
                         node: viewModel.selectedNode!,
-                        viewModel: viewModel,
-                        generatedText: $generatedText
+                        viewModel: viewModel
                     )
                 }
                 
@@ -140,9 +137,12 @@ struct ContentView: View {
     
     private func generateContent() {
         guard !promptText.isEmpty else { return }
+        guard let selectedNodeId = viewModel.selectedNodeId else {
+            errorMessage = "Please select a node first"
+            return
+        }
         
         isGenerating = true
-        generatedText = ""
         errorMessage = nil
         
         Task {
@@ -156,15 +156,13 @@ struct ContentView: View {
                 )
                 
                 await MainActor.run {
-                    generatedText = response
                     isGenerating = false
                     
-                    // Auto-update selected node content if available
-                    if let selectedNodeId = viewModel.selectedNodeId {
-                        viewModel.updateNode(selectedNodeId, content: response)
-                    } else {
-                        viewModel.markAsChanged()
-                    }
+                    // Store AI results in the selected node
+                    viewModel.updateNode(selectedNodeId, aiResults: response)
+                    
+                    // Clear prompt after successful generation
+                    promptText = ""
                 }
             } catch {
                 await MainActor.run {

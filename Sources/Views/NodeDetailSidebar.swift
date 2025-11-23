@@ -3,7 +3,6 @@ import SwiftUI
 struct NodeDetailSidebar: View {
     let node: Node
     @ObservedObject var viewModel: NodeCanvasViewModel
-    @Binding var generatedText: String
     @State private var editingContent: String = ""
     @State private var editingTitle: String = ""
     
@@ -92,15 +91,15 @@ struct NodeDetailSidebar: View {
                         }
                 }
                 
-                // Generated text
-                if !generatedText.isEmpty {
+                // AI Generated text (node-specific)
+                if !node.aiResults.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("AI Generated")
                             .font(.custom("Courier", size: 12))
                             .foregroundColor(.secondary)
                         
                         ScrollView {
-                            Text(generatedText)
+                            Text(node.aiResults)
                                 .font(.custom("Courier", size: 14))
                                 .lineSpacing(1.2)
                                 .padding(.horizontal, 1.5)
@@ -113,11 +112,18 @@ struct NodeDetailSidebar: View {
                                 .stroke(Color(NSColor.separatorColor), lineWidth: 1)
                         )
                         
-                        Button("Use this content") {
-                            editingContent = generatedText
-                            viewModel.updateNode(node.id, content: generatedText)
+                        HStack {
+                            Button("Use this content") {
+                                editingContent = node.aiResults
+                                viewModel.updateNode(node.id, content: node.aiResults)
+                            }
+                            .buttonStyle(.bordered)
+                            
+                            Button("Clear") {
+                                viewModel.updateNode(node.id, aiResults: "")
+                            }
+                            .buttonStyle(.bordered)
                         }
-                        .buttonStyle(.bordered)
                     }
                 }
                 

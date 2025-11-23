@@ -13,14 +13,17 @@ struct PromptInputView: View {
                 Picker("AI Service", selection: $selectedAIService) {
                     Text("Ollama").tag(AIServiceType.ollama)
                     Text("Mistral AI").tag(AIServiceType.mistral)
+                    Text("MLX").tag(AIServiceType.mlx)
+                    Text("OpenAI").tag(AIServiceType.openai)
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 200)
+                .frame(width: 400)
                 
-                TextField("Model (e.g., mistral, llama2)", text: $aiModel)
+                TextField("Model", text: $aiModel)
                     .textFieldStyle(.roundedBorder)
                     .font(.custom("Courier", size: 12))
                     .frame(width: 200)
+                    .help("e.g., mistral, llama2, gpt-4, mistral-7b")
             }
             
             HStack(spacing: 12) {

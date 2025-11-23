@@ -43,14 +43,16 @@ struct Node: Identifiable, Codable {
     var category: NodeCategory
     var position: CGPoint
     var linkedNodeIds: Set<UUID>
+    var aiResults: String // Store AI-generated content for this node
     
-    init(id: UUID = UUID(), title: String, content: String = "", category: NodeCategory, position: CGPoint = .zero) {
+    init(id: UUID = UUID(), title: String, content: String = "", category: NodeCategory, position: CGPoint = .zero, aiResults: String = "") {
         self.id = id
         self.title = title
         self.content = content
         self.category = category
         self.position = position
         self.linkedNodeIds = []
+        self.aiResults = aiResults
     }
     
     mutating func link(to nodeId: UUID) {
