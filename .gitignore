@@ -1,0 +1,12 @@
+# Swift build artifacts
+.build/
+*.xcodeproj
+*.xcworkspace
+
+# macOS
+.DS_Store
+
+# Xcode
+*.swiftpm
+xcuserdata/
+
