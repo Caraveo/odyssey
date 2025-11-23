@@ -84,7 +84,7 @@ struct NodeDetailSidebar: View {
                     }
                     
                     WritingView(text: $editingContent)
-                        .frame(minHeight: 200, maxHeight: 600)
+                        .frame(minHeight: 200)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color(NSColor.separatorColor), lineWidth: 1)

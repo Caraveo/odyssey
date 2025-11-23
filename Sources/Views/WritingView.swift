@@ -19,7 +19,7 @@ struct WritingView: View {
                         .lineSpacing(1.2)
                         .padding(.horizontal, 24) // 1.5 * 16 = 24 points for margins
                         .padding(.vertical, 24)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: 200)
                         .scrollContentBackground(.hidden)
                         .background(Color(NSColor.textBackgroundColor))
                         .focused($isFocused)
