@@ -5,6 +5,11 @@
 
 # macOS
 .DS_Store
+*.app/
+
+# Icons (keep source PNG, ignore generated files)
+*.iconset/
+*.icns
 
 # Xcode
 *.swiftpm
