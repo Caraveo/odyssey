@@ -7,6 +7,7 @@ struct SettingsView: View {
     @State private var availableModels: [String] = []
     @State private var isLoadingModels: Bool = false
     @State private var showCustomModel: Bool = false
+    @AppStorage("darkMode") private var isDarkMode: Bool = false
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -26,6 +27,21 @@ struct SettingsView: View {
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
+            }
+            
+            Divider()
+            
+            // Appearance Settings
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Appearance")
+                    .font(.custom("Courier", size: 14))
+                    .fontWeight(.semibold)
+                
+                Toggle("Dark Mode", isOn: $isDarkMode)
+                    .font(.custom("Courier", size: 12))
+                    .onChange(of: isDarkMode) { newValue in
+                        applyAppearance(newValue)
+                    }
             }
             
             Divider()
@@ -133,9 +149,11 @@ struct SettingsView: View {
             Spacer()
         }
         .padding(30)
-        .frame(width: 500, height: 400)
+        .frame(width: 500, height: 450)
         .onAppear {
             loadModels()
+            // Apply saved appearance on load
+            applyAppearance(isDarkMode)
         }
         .sheet(isPresented: $showCustomModel) {
             CustomModelSheet(model: $aiModel, isPresented: $showCustomModel)
@@ -178,6 +196,14 @@ struct SettingsView: View {
             return available.first { $0.contains("gpt-4") } ?? available.first { $0.contains("gpt") } ?? available.first
         case .mistral:
             return available.first { $0.contains("large") } ?? available.first
+        }
+    }
+    
+    private func applyAppearance(_ darkMode: Bool) {
+        if darkMode {
+            NSApp.appearance = NSAppearance(named: .darkAqua)
+        } else {
+            NSApp.appearance = NSAppearance(named: .aqua)
         }
     }
 }

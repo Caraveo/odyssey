@@ -4,6 +4,17 @@ import AppKit
 @main
 struct OdysseyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @AppStorage("darkMode") private var isDarkMode: Bool = false
+    
+    init() {
+        // Apply saved appearance preference on app launch
+        let savedDarkMode = UserDefaults.standard.bool(forKey: "darkMode")
+        if savedDarkMode {
+            NSApp.appearance = NSAppearance(named: .darkAqua)
+        } else {
+            NSApp.appearance = NSAppearance(named: .aqua)
+        }
+    }
     
     var body: some Scene {
         WindowGroup {
