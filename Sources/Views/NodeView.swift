@@ -76,6 +76,7 @@ struct NodeView: View {
                     if let index = viewModel.nodes.firstIndex(where: { $0.id == node.id }) {
                         viewModel.nodes[index].position.x += value.translation.width
                         viewModel.nodes[index].position.y += value.translation.height
+                        viewModel.markAsChanged()
                     }
                     dragOffset = .zero
                 }

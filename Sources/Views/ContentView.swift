@@ -99,6 +99,24 @@ struct ContentView: View {
                     VStack {
                         Spacer()
                         
+                        // Auto-save indicator
+                        if viewModel.isAutoSaving {
+                            HStack {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                                Text("Auto-saving...")
+                                    .font(.custom("Courier", size: 10))
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color(NSColor.controlBackgroundColor))
+                            )
+                            .padding(.bottom, 8)
+                        }
+                        
                         PromptInputView(
                             promptText: $promptText,
                             selectedAIService: $selectedAIService,
@@ -155,6 +173,12 @@ struct ContentView: View {
                     window.makeKeyAndOrderFront(nil)
                 }
             }
+            // Start auto-save
+            viewModel.startAutoSave()
+        }
+        .onDisappear {
+            // Stop auto-save when view disappears
+            viewModel.stopAutoSave()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenBook"))) { notification in
             if let url = notification.userInfo?["url"] as? URL {

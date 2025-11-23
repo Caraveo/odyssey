@@ -11,7 +11,16 @@ class BookService {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(book)
-        try data.write(to: url)
+        
+        // Create directory if it doesn't exist
+        let fileManager = FileManager.default
+        let directory = url.deletingLastPathComponent()
+        if !fileManager.fileExists(atPath: directory.path) {
+            try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+        
+        // Write atomically to prevent corruption
+        try data.write(to: url, options: .atomic)
     }
     
     func loadBook(from url: URL) throws -> Book {
