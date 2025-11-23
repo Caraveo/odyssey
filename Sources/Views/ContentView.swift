@@ -127,7 +127,7 @@ struct ContentView: View {
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
                     .padding(.bottom, 20)
-                    .padding(.trailing, geometry.size.width * 0.2) // Position 20% from right edge
+                    .padding(.trailing, geometry.size.width * 0.1) // Position 10% from right edge
                 }
                 
                 // Sidebar for node details
