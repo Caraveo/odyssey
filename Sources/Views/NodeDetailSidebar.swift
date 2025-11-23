@@ -11,25 +11,26 @@ struct NodeDetailSidebar: View {
         HStack {
             Spacer()
             
-            VStack(alignment: .leading, spacing: 16) {
-                // Header
-                HStack {
-                    Text("Node Details")
-                        .font(.custom("Courier", size: 18))
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                    
-                    Button {
-                        viewModel.selectNode(nil)
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    // Header
+                    HStack {
+                        Text("Node Details")
+                            .font(.custom("Courier", size: 18))
+                            .fontWeight(.bold)
+                        
+                        Spacer()
+                        
+                        Button {
+                            viewModel.selectNode(nil)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                }
-                
-                Divider()
+                    
+                    Divider()
                 
                 // Title
                 VStack(alignment: .leading, spacing: 4) {
@@ -83,9 +84,9 @@ struct NodeDetailSidebar: View {
                     }
                     
                     WritingView(text: $editingContent)
-                        .frame(height: 400)
+                        .frame(minHeight: 200, maxHeight: 600)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color(NSColor.separatorColor), lineWidth: 1)
                         )
                         .onChange(of: editingContent) { newValue in
@@ -96,34 +97,83 @@ struct NodeDetailSidebar: View {
                 
                 // AI Generated text (node-specific)
                 if !node.aiResults.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("AI Generated")
-                            .font(.custom("Courier", size: 12))
-                            .foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "sparkles")
+                                .foregroundColor(.purple)
+                                .font(.system(size: 12))
+                            
+                            Text("AI Generated")
+                                .font(.custom("Courier", size: 12))
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                            
+                            Spacer()
+                        }
                         
                         ScrollView {
-                            Text(node.aiResults)
-                                .font(.custom("Courier", size: 14))
-                                .lineSpacing(1.2)
-                                .padding(.horizontal, 1.5)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text(node.aiResults)
+                                    .font(.custom("Courier", size: 14))
+                                    .lineSpacing(1.5)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
                         }
-                        .frame(height: 200)
-                        .background(Color(NSColor.textBackgroundColor))
+                        .frame(minHeight: 150, maxHeight: 400)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.purple.opacity(0.05),
+                                            Color.blue.opacity(0.05)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color(NSColor.separatorColor), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.purple.opacity(0.3),
+                                            Color.blue.opacity(0.3)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1.5
+                                )
                         )
                         
-                        HStack {
-                            Button("Use this content") {
+                        HStack(spacing: 8) {
+                            Button {
                                 editingContent = node.aiResults
                                 viewModel.updateNode(node.id, content: node.aiResults)
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.down.circle.fill")
+                                        .font(.system(size: 11))
+                                    Text("Use this content")
+                                        .font(.custom("Courier", size: 12))
+                                }
                             }
-                            .buttonStyle(.bordered)
+                            .buttonStyle(.borderedProminent)
+                            .tint(.purple)
                             
-                            Button("Clear") {
+                            Button {
                                 viewModel.updateNode(node.id, aiResults: "")
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 11))
+                                    Text("Clear")
+                                        .font(.custom("Courier", size: 12))
+                                }
                             }
                             .buttonStyle(.bordered)
                         }
@@ -159,10 +209,9 @@ struct NodeDetailSidebar: View {
                         }
                     }
                 }
-                
-                Spacer()
+                }
+                .padding(20)
             }
-            .padding(20)
             .frame(width: 400)
             .background(Color(NSColor.windowBackgroundColor))
             .shadow(color: Color.black.opacity(0.1), radius: 8, x: -4, y: 0)
