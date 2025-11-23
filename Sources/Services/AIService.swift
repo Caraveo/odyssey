@@ -258,10 +258,37 @@ class AIService {
            let firstChoice = choices.first,
            let message = firstChoice["message"] as? [String: Any],
            let content = message["content"] as? String {
-            return content
+            return filterReasoning(from: content)
         }
         
         throw AIError.invalidResponse
+    }
+    
+    private func filterReasoning(from content: String) -> String {
+        var filtered = content
+        
+        // Remove reasoning sections (case-insensitive)
+        // Pattern: "Reasoning:" or "Reasoning\n" followed by content until next section or end
+        let reasoningPatterns = [
+            "(?i)Reasoning:\\s*[\\s\\S]*?(?=\\n\\n|\\n[A-Z]|$)",
+            "(?i)<reasoning>[\\s\\S]*?</reasoning>",
+            "(?i)Reasoning\\s*\\n[\\s\\S]*?(?=\\n\\n|$)"
+        ]
+        
+        for pattern in reasoningPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+                let range = NSRange(location: 0, length: filtered.utf16.count)
+                filtered = regex.stringByReplacingMatches(in: filtered, options: [], range: range, withTemplate: "")
+            }
+        }
+        
+        // Remove any standalone "Reasoning:" lines
+        filtered = filtered.replacingOccurrences(of: "(?i)^Reasoning:.*$", with: "", options: .regularExpression)
+        
+        // Clean up extra whitespace
+        filtered = filtered.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        return filtered
     }
     
     private func callOpenAIAPI(prompt: String, model: String) async throws -> String {
