@@ -8,6 +8,9 @@ class NodeCanvasViewModel: ObservableObject {
     @Published var draggingNodeId: UUID?
     @Published var dragOffset: CGSize = .zero
     @Published var linkingFromNodeId: UUID?
+    @Published var currentBookURL: URL?
+    @Published var bookTitle: String = "Untitled Book"
+    @Published var hasUnsavedChanges: Bool = false
     
     var selectedNode: Node? {
         guard let selectedNodeId = selectedNodeId else { return nil }
@@ -27,6 +30,7 @@ class NodeCanvasViewModel: ObservableObject {
     func addNode(title: String, category: NodeCategory, at position: CGPoint) {
         let node = Node(title: title, category: category, position: position)
         nodes.append(node)
+        markAsChanged()
     }
     
     func deleteNode(_ nodeId: UUID) {
@@ -38,15 +42,18 @@ class NodeCanvasViewModel: ObservableObject {
         if selectedNodeId == nodeId {
             selectedNodeId = nil
         }
+        markAsChanged()
     }
     
     func updateNode(_ nodeId: UUID, title: String? = nil, content: String? = nil) {
         guard let index = nodes.firstIndex(where: { $0.id == nodeId }) else { return }
         if let title = title {
             nodes[index].title = title
+            markAsChanged()
         }
         if let content = content {
             nodes[index].content = content
+            markAsChanged()
         }
     }
     
@@ -72,11 +79,13 @@ class NodeCanvasViewModel: ObservableObject {
         
         nodes[fromIndex].link(to: nodeId)
         linkingFromNodeId = nil
+        markAsChanged()
     }
     
     func removeLink(from: UUID, to: UUID) {
         guard let fromIndex = nodes.firstIndex(where: { $0.id == from }) else { return }
         nodes[fromIndex].unlink(from: to)
+        markAsChanged()
     }
     
     func getContextForPrompt() -> String {
@@ -102,6 +111,30 @@ class NodeCanvasViewModel: ObservableObject {
     func getRelatedNodes(for nodeId: UUID) -> [Node] {
         guard let node = nodes.first(where: { $0.id == nodeId }) else { return [] }
         return nodes.filter { node.linkedNodeIds.contains($0.id) }
+    }
+    
+    func loadBook(_ book: Book) {
+        nodes = book.nodes
+        bookTitle = book.title
+        selectedNodeId = nil
+        hasUnsavedChanges = false
+    }
+    
+    func createBook() -> Book {
+        return Book(title: bookTitle, nodes: nodes)
+    }
+    
+    func newBook() {
+        nodes = []
+        selectedNodeId = nil
+        linkingFromNodeId = nil
+        currentBookURL = nil
+        bookTitle = "Untitled Book"
+        hasUnsavedChanges = false
+    }
+    
+    func markAsChanged() {
+        hasUnsavedChanges = true
     }
 }
 

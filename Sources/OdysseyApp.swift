@@ -31,10 +31,23 @@ struct OdysseyApp: App {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    static var shared: AppDelegate?
+    var contentView: ContentView?
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppDelegate.shared = self
         // Activate the app when it finishes launching
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+        
+        // Handle file opening from command line
+        if CommandLine.arguments.count > 1 {
+            let filePath = CommandLine.arguments[1]
+            if filePath.hasSuffix(".book") {
+                let url = URL(fileURLWithPath: filePath)
+                openBook(url: url)
+            }
+        }
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -44,6 +57,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         return true
+    }
+    
+    func application(_ sender: NSApplication, openFile filename: String) -> Bool {
+        let url = URL(fileURLWithPath: filename)
+        if url.pathExtension == "book" {
+            openBook(url: url)
+            return true
+        }
+        return false
+    }
+    
+    func application(_ sender: NSApplication, openFiles filenames: [String]) {
+        for filename in filenames {
+            let url = URL(fileURLWithPath: filename)
+            if url.pathExtension == "book" {
+                openBook(url: url)
+                break
+            }
+        }
+    }
+    
+    private func openBook(url: URL) {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(
+                name: NSNotification.Name("OpenBook"),
+                object: nil,
+                userInfo: ["url": url]
+            )
+        }
     }
 }
 

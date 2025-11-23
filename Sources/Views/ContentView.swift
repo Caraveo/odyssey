@@ -61,6 +61,20 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenBook"))) { notification in
+            if let url = notification.userInfo?["url"] as? URL {
+                do {
+                    let book = try BookService.shared.loadBook(from: url)
+                    viewModel.loadBook(book)
+                    viewModel.currentBookURL = url
+                    if let fileName = url.deletingPathExtension().lastPathComponent as String? {
+                        viewModel.bookTitle = fileName
+                    }
+                } catch {
+                    errorMessage = "Failed to open book: \(error.localizedDescription)"
+                }
+            }
+        }
         .alert("Error", isPresented: .constant(errorMessage != nil)) {
             Button("OK") {
                 errorMessage = nil
@@ -96,6 +110,8 @@ struct ContentView: View {
                     // Auto-update selected node content if available
                     if let selectedNodeId = viewModel.selectedNodeId {
                         viewModel.updateNode(selectedNodeId, content: response)
+                    } else {
+                        viewModel.markAsChanged()
                     }
                 }
             } catch {
