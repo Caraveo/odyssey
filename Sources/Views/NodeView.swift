@@ -22,9 +22,6 @@ struct NodeView: View {
                 Spacer()
                 
                 Menu {
-                    Button("Link to another node") {
-                        viewModel.startLinking(from: node.id)
-                    }
                     Button("Delete", role: .destructive) {
                         viewModel.deleteNode(node.id)
                     }
@@ -84,15 +81,18 @@ struct NodeView: View {
                 }
         )
         .onTapGesture {
-            viewModel.selectNode(node.id)
+            viewModel.handleNodeClick(node.id)
         }
-        .onLongPressGesture {
-            if viewModel.linkingFromNodeId == nil {
-                viewModel.startLinking(from: node.id)
-            } else if viewModel.linkingFromNodeId != node.id {
-                viewModel.completeLinking(to: node.id)
+        .overlay(
+            // Highlight when in linking mode and this is the source node
+            Group {
+                if viewModel.isLinkingMode && viewModel.linkingFromNodeId == node.id {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.blue, lineWidth: 3)
+                        .animation(.easeInOut(duration: 0.3).repeatForever(autoreverses: true), value: viewModel.linkingFromNodeId)
+                }
             }
-        }
+        )
     }
 }
 

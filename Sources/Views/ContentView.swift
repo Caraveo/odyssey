@@ -22,15 +22,38 @@ struct ContentView: View {
                     NodeCanvasView(viewModel: viewModel)
                         .frame(width: geometry.size.width, height: geometry.size.height)
                     
-                    // Floating Add Node Button
+                    // Floating Buttons
                     VStack {
                         HStack {
                             Spacer()
-                            AddNodeButton(viewModel: viewModel)
-                                .padding(.top, 20)
-                                .padding(.trailing, 20)
+                            VStack(spacing: 12) {
+                                AddNodeButton(viewModel: viewModel)
+                                LinkNodesButton(viewModel: viewModel)
+                            }
+                            .padding(.top, 20)
+                            .padding(.trailing, 20)
                         }
                         Spacer()
+                    }
+                    
+                    // Linking mode indicator
+                    if viewModel.isLinkingMode {
+                        VStack {
+                            HStack {
+                                Text("Linking Mode: Click a node, then click another to link")
+                                    .font(.custom("Courier", size: 12))
+                                    .foregroundColor(.blue)
+                                    .padding(8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(Color.blue.opacity(0.1))
+                                    )
+                                Spacer()
+                            }
+                            Spacer()
+                        }
+                        .padding(.top, 20)
+                        .padding(.leading, 20)
                     }
                     
                     // Bottom Prompt Input - Fixed at bottom

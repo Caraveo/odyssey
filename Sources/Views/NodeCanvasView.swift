@@ -31,7 +31,10 @@ struct NodeCanvasView: View {
                        let toNode = viewModel.nodes.first(where: { $0.id == connection.toNodeId }) {
                         ConnectionLine(
                             from: fromNode.position + canvasOffset,
-                            to: toNode.position + canvasOffset
+                            to: toNode.position + canvasOffset,
+                            onDelete: {
+                                viewModel.removeLink(from: connection.fromNodeId, to: connection.toNodeId)
+                            }
                         )
                     }
                 }
@@ -118,13 +121,38 @@ struct NodeCanvasView: View {
 struct ConnectionLine: View {
     let from: CGPoint
     let to: CGPoint
+    let onDelete: () -> Void
+    @State private var isHovered: Bool = false
     
     var body: some View {
-        Path { path in
-            path.move(to: from)
-            path.addLine(to: to)
+        ZStack {
+            // Invisible hit area for clicking
+            Path { path in
+                path.move(to: from)
+                path.addLine(to: to)
+            }
+            .stroke(Color.clear, lineWidth: 20)
+            .contentShape(Path { path in
+                path.move(to: from)
+                path.addLine(to: to)
+            })
+            .onTapGesture {
+                onDelete()
+            }
+            .onHover { hovering in
+                isHovered = hovering
+            }
+            
+            // Visible line
+            Path { path in
+                path.move(to: from)
+                path.addLine(to: to)
+            }
+            .stroke(
+                isHovered ? Color.red.opacity(0.6) : Color.blue.opacity(0.4),
+                lineWidth: isHovered ? 3 : 2
+            )
         }
-        .stroke(Color.blue.opacity(0.4), lineWidth: 2)
     }
 }
 

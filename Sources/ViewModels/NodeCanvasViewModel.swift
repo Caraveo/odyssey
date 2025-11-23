@@ -8,6 +8,7 @@ class NodeCanvasViewModel: ObservableObject {
     @Published var draggingNodeId: UUID?
     @Published var dragOffset: CGSize = .zero
     @Published var linkingFromNodeId: UUID?
+    @Published var isLinkingMode: Bool = false
     @Published var currentBookURL: URL?
     @Published var bookTitle: String = "Untitled Book"
     @Published var hasUnsavedChanges: Bool = false
@@ -63,27 +64,39 @@ class NodeCanvasViewModel: ObservableObject {
     
     func selectNode(_ nodeId: UUID?) {
         selectedNodeId = nodeId
-        linkingFromNodeId = nil
+        if !isLinkingMode {
+            linkingFromNodeId = nil
+        }
     }
     
-    func startLinking(from nodeId: UUID) {
-        linkingFromNodeId = nodeId
+    func toggleLinkingMode() {
+        isLinkingMode.toggle()
+        if !isLinkingMode {
+            linkingFromNodeId = nil
+        }
     }
     
-    func completeLinking(to nodeId: UUID) {
-        guard let fromId = linkingFromNodeId, fromId != nodeId else {
-            linkingFromNodeId = nil
-            return
+    func handleNodeClick(_ nodeId: UUID) {
+        if isLinkingMode {
+            if let fromId = linkingFromNodeId {
+                // Complete linking
+                if fromId != nodeId {
+                    guard let fromIndex = nodes.firstIndex(where: { $0.id == fromId }) else {
+                        linkingFromNodeId = nil
+                        return
+                    }
+                    nodes[fromIndex].link(to: nodeId)
+                    markAsChanged()
+                }
+                linkingFromNodeId = nil
+            } else {
+                // Start linking
+                linkingFromNodeId = nodeId
+            }
+        } else {
+            // Normal selection
+            selectNode(nodeId)
         }
-        
-        guard let fromIndex = nodes.firstIndex(where: { $0.id == fromId }) else {
-            linkingFromNodeId = nil
-            return
-        }
-        
-        nodes[fromIndex].link(to: nodeId)
-        linkingFromNodeId = nil
-        markAsChanged()
     }
     
     func removeLink(from: UUID, to: UUID) {
@@ -132,6 +145,7 @@ class NodeCanvasViewModel: ObservableObject {
         nodes = []
         selectedNodeId = nil
         linkingFromNodeId = nil
+        isLinkingMode = false
         currentBookURL = nil
         bookTitle = "Untitled Book"
         hasUnsavedChanges = false
