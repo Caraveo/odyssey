@@ -146,6 +146,7 @@ struct AddNodeSheet: View {
     @Binding var title: String
     @Binding var category: NodeCategory
     let onAdd: () -> Void
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         VStack(spacing: 20) {
@@ -184,6 +185,7 @@ struct AddNodeSheet: View {
             HStack {
                 Button("Cancel") {
                     title = ""
+                    dismiss()
                 }
                 .buttonStyle(.bordered)
                 

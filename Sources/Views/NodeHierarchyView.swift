@@ -2,6 +2,7 @@ import SwiftUI
 
 struct NodeHierarchyView: View {
     @ObservedObject var viewModel: NodeCanvasViewModel
+    let onCollapse: () -> Void
     @State private var expandedCategories: Set<NodeCategory> = Set(NodeCategory.allCases)
     
     var nodesByCategory: [NodeCategory: [Node]] {
@@ -18,20 +19,32 @@ struct NodeHierarchyView: View {
                 
                 Spacer()
                 
-                Button {
-                    // Toggle all categories
-                    if expandedCategories.count == NodeCategory.allCases.count {
-                        expandedCategories.removeAll()
-                    } else {
-                        expandedCategories = Set(NodeCategory.allCases)
+                HStack(spacing: 4) {
+                    Button {
+                        // Toggle all categories
+                        if expandedCategories.count == NodeCategory.allCases.count {
+                            expandedCategories.removeAll()
+                        } else {
+                            expandedCategories = Set(NodeCategory.allCases)
+                        }
+                    } label: {
+                        Image(systemName: expandedCategories.count == NodeCategory.allCases.count ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
                     }
-                } label: {
-                    Image(systemName: expandedCategories.count == NodeCategory.allCases.count ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
+                    .buttonStyle(.plain)
+                    .help(expandedCategories.count == NodeCategory.allCases.count ? "Collapse All" : "Expand All")
+                    
+                    Button {
+                        onCollapse()
+                    } label: {
+                        Image(systemName: "sidebar.left")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Collapse Node List")
                 }
-                .buttonStyle(.plain)
-                .help(expandedCategories.count == NodeCategory.allCases.count ? "Collapse All" : "Expand All")
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)

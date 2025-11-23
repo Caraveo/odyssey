@@ -37,6 +37,10 @@ struct AddNodeButton: View {
                     showingAddNode = false
                 }
             )
+            .onDisappear {
+                // Reset form when sheet is dismissed
+                newNodeTitle = ""
+            }
         }
     }
 }

@@ -12,11 +12,45 @@ struct ContentView: View {
     @State private var writingModeNodeId: UUID?
     @State private var writingModeContent: String = ""
     @State private var showingSettings: Bool = false
+    @State private var isNodeListCollapsed: Bool = false
     
     var body: some View {
         HStack(spacing: 0) {
-            // Node Hierarchy List (Left Side)
-            NodeHierarchyView(viewModel: viewModel)
+            // Node Hierarchy List (Left Side) - Collapsible
+            if !isNodeListCollapsed {
+                NodeHierarchyView(viewModel: viewModel, onCollapse: {
+                    isNodeListCollapsed = true
+                })
+                .transition(.move(edge: .leading))
+            } else {
+                // Collapsed state - just a button
+                VStack {
+                    Button {
+                        isNodeListCollapsed = false
+                    } label: {
+                        Image(systemName: "sidebar.right")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                            .frame(width: 30, height: 30)
+                            .background(Color(NSColor.controlBackgroundColor))
+                            .cornerRadius(4)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Show Node List")
+                    
+                    Spacer()
+                }
+                .frame(width: 40)
+                .padding(.top, 10)
+                .background(Color(NSColor.windowBackgroundColor))
+                .overlay(
+                    Rectangle()
+                        .frame(width: 1)
+                        .foregroundColor(Color(NSColor.separatorColor)),
+                    alignment: .trailing
+                )
+                .transition(.move(edge: .leading))
+            }
             
             // Main Canvas Area
             ZStack {
