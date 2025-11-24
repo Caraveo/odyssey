@@ -1,6 +1,6 @@
 # Odyssey
 
-A beautiful macOS SwiftUI writing app with a node-based canvas for organizing and creating original works using AI.
+A beautiful macOS SwiftUI writing app designed for novel writing. Odyssey combines node-based organization with AI-powered content generation to help you visualize and develop your novel ideas in a whole new way.
 
 ## Screenshots
 
@@ -9,11 +9,14 @@ A beautiful macOS SwiftUI writing app with a node-based canvas for organizing an
 
 ## Features
 
-- **Node-Based Canvas**: Create and link nodes representing characters, plots, conflicts, and concepts
-- **Context-Aware AI Prompts**: Generate content based on selected nodes and their relationships
-- **Dual AI Support**: Works with both Ollama (local) and Mistral AI
-- **Beautiful Typography**: Courier font with 1.2 line spacing and 1.5 margins
-- **Interactive Linking**: Connect nodes to build relationships and context
+✨ **What makes Odyssey special:**
+
+- **Visual Node Canvas**: Organize your novel's characters, plots, conflicts, and concepts in an intuitive visual workspace
+- **Context-Aware AI Prompts**: AI that understands your novel's relationships and generates content based on selected nodes and their connections
+- **Dual AI Support**: Works with both Ollama (local) and Mistral AI (cloud) - choose what works best for you
+- **Beautiful Typography**: Courier font with 1.2 line spacing and 1.5 margins, optimized for novel writing
+- **Interactive Linking**: Build connections between story elements to create rich, interconnected narratives for your novel
+- **Save Your Projects**: Save your book projects as `.book` files to preserve your work and continue later
 
 ## Requirements
 
@@ -44,11 +47,14 @@ swift run Odyssey
 
 ## Usage
 
-1. **Add Nodes**: Use the menu bar to add nodes of different categories (Character, Plot, Conflict, Concept)
+Start organizing and writing your novel:
+
+1. **Add Nodes**: Use the menu bar to add nodes of different categories (Character, Plot, Conflict, Concept) to build your novel's structure
 2. **Link Nodes**: Long-press on a node to start linking, then tap another node to create a connection
 3. **Select Nodes**: Click on a node to view and edit its details in the sidebar
-4. **Generate Content**: Select a node, enter a prompt in the central input, and generate AI content based on the node's context and relationships
+4. **Generate Content**: Select a node, enter a prompt in the central input, and generate AI content for your novel based on the node's context and relationships
 5. **Pan Canvas**: Click and drag on the background to pan the canvas
+6. **Save Your Work**: Save your book project as a `.book` file to preserve all your nodes, links, and content for future sessions
 
 ## AI Configuration
 
