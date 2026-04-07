@@ -92,18 +92,16 @@ struct MenuBarView: View {
     }
     
     private func handleNewBook() {
+        viewModel.flushPendingAutosave()
         viewModel.newBook()
     }
     
     private func handleOpenBook() {
+        viewModel.flushPendingAutosave()
         guard let url = BookService.shared.showOpenPanel() else { return }
         do {
             let book = try BookService.shared.loadBook(from: url)
-            viewModel.loadBook(book)
-            viewModel.currentBookURL = url
-            if let fileName = url.deletingPathExtension().lastPathComponent as String? {
-                viewModel.bookTitle = fileName
-            }
+            viewModel.loadBook(book, from: url)
         } catch {
             errorMessage = "Failed to open book: \(error.localizedDescription)"
             showingError = true
@@ -113,9 +111,7 @@ struct MenuBarView: View {
     private func handleSave() {
         if let url = viewModel.currentBookURL {
             do {
-                let book = viewModel.createBook()
-                try BookService.shared.saveBook(book, to: url)
-                viewModel.hasUnsavedChanges = false
+                try viewModel.saveBook(to: url)
             } catch {
                 errorMessage = "Failed to save book: \(error.localizedDescription)"
                 showingError = true
@@ -126,15 +122,10 @@ struct MenuBarView: View {
     }
     
     private func handleSaveAs() {
+        viewModel.flushPendingAutosave()
         guard let url = BookService.shared.showSavePanel(title: "Save Book") else { return }
         do {
-            let book = viewModel.createBook()
-            try BookService.shared.saveBook(book, to: url)
-            viewModel.currentBookURL = url
-            if let fileName = url.deletingPathExtension().lastPathComponent as String? {
-                viewModel.bookTitle = fileName
-            }
-            viewModel.hasUnsavedChanges = false
+            try viewModel.saveBook(to: url)
         } catch {
             errorMessage = "Failed to save book: \(error.localizedDescription)"
             showingError = true
@@ -204,4 +195,3 @@ struct AddNodeSheet: View {
         .frame(width: 400)
     }
 }
-

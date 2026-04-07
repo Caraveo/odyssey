@@ -1,99 +1,106 @@
 # Odyssey
 
-A beautiful macOS SwiftUI writing app designed for novel writing. Odyssey combines node-based organization with AI-powered content generation to help you visualize and develop your novel ideas in a whole new way.
+Odyssey is a macOS SwiftUI writing studio for novels and long-form fiction. It combines a visual story canvas, focused writing surfaces, structured node templates, and AI-assisted generation so writers can build worlds, characters, scenes, and story logic without losing momentum.
+
+## Version
+
+Current release: `v1.2.0`
 
 ## Screenshots
 
 ![Focus](Focus.png)
 ![Book](Book.png)
 
-## Features
+## Highlights
 
-✨ **What makes Odyssey special:**
+- Visual node canvas for planning characters, scenes, themes, conflicts, and story structure
+- Category-specific templates for every node type, with tailored fields that feed directly into AI generation context
+- Writing-focused workflow that lets you move between hierarchy selections and content mode without breaking focus
+- Autosave and crash recovery for both saved books and untitled drafts
+- Directional node linking with clearer source/target cues and arrowed relationship lines
+- `.book` project saving for preserving node graphs, writing, templates, and AI output
+- Support for local and remote AI providers: MLX, Ollama, OpenAI, and Mistral
 
-- **Visual Node Canvas**: Organize your novel's characters, plots, conflicts, and concepts in an intuitive visual workspace
-- **Context-Aware AI Prompts**: AI that understands your novel's relationships and generates content based on selected nodes and their connections
-- **Dual AI Support**: Works with both Ollama (local) and Mistral AI (cloud) - choose what works best for you
-- **Beautiful Typography**: Courier font with 1.2 line spacing and 1.5 margins, optimized for novel writing
-- **Interactive Linking**: Build connections between story elements to create rich, interconnected narratives for your novel
-- **Save Your Projects**: Save your book projects as `.book` files to preserve your work and continue later
+## What Changed In v1.2.0
+
+- Added structured templates for every node category
+- Added recovery snapshots and restore flows so unsaved writing is protected
+- Improved full-screen writing behavior and hierarchy-driven node switching
+- Refined linking UX with directional arrows, source/target indicators, and clearer guidance
+- Updated prompt/input positioning so the canvas stays balanced while sidebars open and close
 
 ## Requirements
 
 - macOS 13.0 or later
 - Swift 5.9 or later
-- Ollama (for local AI) - [Install Ollama](https://ollama.ai)
-- Mistral AI API Key (optional, for cloud AI) - Set via `MISTRAL_API_KEY` environment variable
+- Optional local AI:
+  - Ollama: [ollama.ai](https://ollama.ai)
+  - MLX / MistyStudio running locally on `http://localhost:11973`
+- Optional cloud AI:
+  - OpenAI API key via `OPENAI_API_KEY`
+  - Mistral API key via `MISTRAL_API_KEY`
 
 ## Building
 
-Build the app using Swift Package Manager:
+Build the Swift package:
 
 ```bash
 swift build -c release
 ```
 
-Run the app:
-
-```bash
-swift run
-```
-
-Or build and run in one command:
+Run the app directly from SwiftPM:
 
 ```bash
 swift run Odyssey
 ```
 
+Build a macOS app bundle:
+
+```bash
+./build_app_bundle.sh
+```
+
 ## Usage
 
-Start organizing and writing your novel:
-
-1. **Add Nodes**: Use the menu bar to add nodes of different categories (Character, Plot, Conflict, Concept) to build your novel's structure
-2. **Link Nodes**: Long-press on a node to start linking, then tap another node to create a connection
-3. **Select Nodes**: Click on a node to view and edit its details in the sidebar
-4. **Generate Content**: Select a node, enter a prompt in the central input, and generate AI content for your novel based on the node's context and relationships
-5. **Pan Canvas**: Click and drag on the background to pan the canvas
-6. **Save Your Work**: Save your book project as a `.book` file to preserve all your nodes, links, and content for future sessions
-
-## AI Configuration
-
-### Ollama (Local)
-
-1. Install Ollama from [ollama.ai](https://ollama.ai)
-2. Pull a model: `ollama pull mistral` or `ollama pull llama2`
-3. Select "Ollama" in the app and enter the model name
-
-### Mistral AI (Cloud)
-
-1. Get an API key from [mistral.ai](https://mistral.ai)
-2. Set the environment variable: `export MISTRAL_API_KEY=your_key_here`
-3. Select "Mistral AI" in the app
+1. Add nodes for the parts of your story you want to develop.
+2. Select a node to edit its title, writing content, and category template fields.
+3. Use the node templates to provide structured details like character traits, prophecy data, scene goals, relationship tension, and more.
+4. Generate AI content from the prompt bar. Odyssey includes the selected node, its template values, and linked-node context in the generation prompt.
+5. Enter linking mode, choose a source node, preview the arrow to a target node, and click to create a relationship.
+6. Use writing mode for focused drafting while keeping the hierarchy available for quick switching.
+7. Save as a `.book` file, or rely on autosave and recovery to protect in-progress writing.
 
 ## Project Structure
 
-```
+```text
 Odyssey/
 ├── Sources/
-│   ├── OdysseyApp.swift          # App entry point
+│   ├── OdysseyApp.swift
 │   ├── Models/
-│   │   └── Node.swift            # Node data model
+│   │   ├── Book.swift
+│   │   ├── Node.swift
+│   │   └── NodeTemplate.swift
+│   ├── Services/
+│   │   ├── AIService.swift
+│   │   ├── BookService.swift
+│   │   └── RecoveryService.swift
 │   ├── ViewModels/
-│   │   └── NodeCanvasViewModel.swift  # Canvas state management
-│   ├── Views/
-│   │   ├── ContentView.swift     # Main view
-│   │   ├── NodeCanvasView.swift  # Canvas rendering
-│   │   ├── NodeView.swift        # Individual node view
-│   │   ├── PromptInputView.swift # AI prompt input
-│   │   ├── NodeDetailSidebar.swift # Node details panel
-│   │   └── MenuBarView.swift     # Top menu bar
-│   └── Services/
-│       └── AIService.swift       # AI integration
-└── Package.swift
+│   │   └── NodeCanvasViewModel.swift
+│   └── Views/
+│       ├── ContentView.swift
+│       ├── NodeCanvasView.swift
+│       ├── NodeDetailSidebar.swift
+│       ├── NodeHierarchyView.swift
+│       ├── NodeView.swift
+│       ├── PromptInputView.swift
+│       ├── RecoverySheet.swift
+│       ├── WritingModeView.swift
+│       └── WritingView.swift
+├── Package.swift
+├── build.sh
+└── build_app_bundle.sh
 ```
 
 ## License
 
 This project is open source and available for personal use.
-
-

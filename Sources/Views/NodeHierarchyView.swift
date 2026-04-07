@@ -3,6 +3,7 @@ import SwiftUI
 struct NodeHierarchyView: View {
     @ObservedObject var viewModel: NodeCanvasViewModel
     let onCollapse: () -> Void
+    let onSelectNode: (UUID) -> Void
     @State private var expandedCategories: Set<NodeCategory> = Set(NodeCategory.allCases)
     
     var nodesByCategory: [NodeCategory: [Node]] {
@@ -70,7 +71,7 @@ struct NodeHierarchyView: View {
                                     }
                                 },
                                 onSelectNode: { nodeId in
-                                    viewModel.selectNode(nodeId)
+                                    onSelectNode(nodeId)
                                 }
                             )
                         }
@@ -220,4 +221,3 @@ struct NodeRow: View {
         )
     }
 }
-

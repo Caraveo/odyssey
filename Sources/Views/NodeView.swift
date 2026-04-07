@@ -7,6 +7,14 @@ struct NodeView: View {
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging: Bool = false
     
+    private var isLinkSource: Bool {
+        viewModel.isLinkingMode && viewModel.linkingFromNodeId == node.id
+    }
+    
+    private var isLinkTargetCandidate: Bool {
+        viewModel.isLinkingMode && viewModel.linkingFromNodeId != nil && viewModel.linkingFromNodeId != node.id
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -56,7 +64,7 @@ struct NodeView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isSelected ? node.category.color : Color.clear, lineWidth: 2)
+                .stroke(borderColor, style: borderStyle)
         )
         .offset(dragOffset)
         .gesture(
@@ -84,16 +92,72 @@ struct NodeView: View {
         .onTapGesture {
             viewModel.handleNodeClick(node.id)
         }
+        .onHover { hovering in
+            guard viewModel.isLinkingMode, viewModel.linkingFromNodeId != node.id else {
+                if viewModel.hoveredLinkTargetId == node.id {
+                    viewModel.hoveredLinkTargetId = nil
+                }
+                return
+            }
+            
+            if hovering {
+                viewModel.hoveredLinkTargetId = node.id
+            } else if viewModel.hoveredLinkTargetId == node.id {
+                viewModel.hoveredLinkTargetId = nil
+            }
+        }
         .overlay(
-            // Highlight when in linking mode and this is the source node
             Group {
-                if viewModel.isLinkingMode && viewModel.linkingFromNodeId == node.id {
+                if isLinkSource {
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.blue, lineWidth: 3)
-                        .animation(.easeInOut(duration: 0.3).repeatForever(autoreverses: true), value: viewModel.linkingFromNodeId)
+                } else if isLinkTargetCandidate {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.blue.opacity(0.45), style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
                 }
             }
         )
+        .overlay(alignment: .topTrailing) {
+            if isLinkSource {
+                linkBadge(label: "Source", systemImage: "link.circle.fill")
+                    .offset(x: 18, y: -14)
+            } else if isLinkTargetCandidate {
+                linkBadge(label: "Link", systemImage: "plus.circle.fill")
+                    .offset(x: 18, y: -14)
+            }
+        }
+    }
+    
+    private var borderColor: Color {
+        if isLinkSource {
+            return .blue
+        }
+        
+        if isSelected {
+            return node.category.color
+        }
+        
+        return .clear
+    }
+    
+    private var borderStyle: StrokeStyle {
+        if isLinkSource {
+            return StrokeStyle(lineWidth: 3)
+        }
+        
+        return StrokeStyle(lineWidth: 2)
+    }
+    
+    @ViewBuilder
+    private func linkBadge(label: String, systemImage: String) -> some View {
+        Label(label, systemImage: systemImage)
+            .font(.custom("Courier", size: 10))
+            .foregroundColor(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(Color.blue)
+            )
     }
 }
-

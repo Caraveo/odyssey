@@ -18,10 +18,8 @@ struct LinkNodesButton: View {
                 )
         }
         .buttonStyle(.plain)
-        .help(viewModel.isLinkingMode ? "Linking Mode: Click a node, then click another to link. Click again to exit." : "Link Nodes")
+        .help(viewModel.isLinkingMode ? "Linking Mode: choose a source node, hover another node to preview the direction arrow, then click to connect. Click again to exit." : "Link Nodes")
     }
 }
-
-
 
 

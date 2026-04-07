@@ -3,6 +3,8 @@
 # Build script that creates an app bundle with icon
 
 APP_NAME="Odyssey"
+VERSION="1.2.0"
+BUILD_NUMBER="120"
 APP_BUNDLE="${APP_NAME}.app"
 BUILD_DIR=".build/release"
 CONTENTS_DIR="${APP_BUNDLE}/Contents"
@@ -56,13 +58,13 @@ cat > "${CONTENTS_DIR}/Info.plist" << EOF
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>${VERSION}</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>${BUILD_NUMBER}</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Copyright © 2024</string>
+    <string>Copyright © 2026</string>
     <key>CFBundleDocumentTypes</key>
     <array>
         <dict>
@@ -100,10 +102,9 @@ cat > "${CONTENTS_DIR}/Info.plist" << EOF
 </plist>
 EOF
 
-echo "App bundle created: ${APP_BUNDLE}"
+echo "App bundle created: ${APP_BUNDLE} (${VERSION})"
 echo "You can now run it with: open ${APP_BUNDLE}"
 echo "Or double-click it in Finder!"
-
 
 
 

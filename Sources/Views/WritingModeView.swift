@@ -56,6 +56,10 @@ struct WritingModeView: View {
                 
                 // Writing area
                 WritingView(text: $content)
+                    .onChange(of: content) { newValue in
+                        guard let nodeId else { return }
+                        viewModel.updateNode(nodeId, content: newValue)
+                    }
             }
         }
         .onAppear {
@@ -66,7 +70,6 @@ struct WritingModeView: View {
         }
     }
 }
-
 
 
 

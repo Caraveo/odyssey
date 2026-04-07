@@ -147,6 +147,8 @@ class AIService {
         Prompt:
         \(prompt)
         
+        Use the node content, category template details, and linked-node context as grounding constraints.
+        If template details are present, respect them closely while still writing creatively.
         Please provide a creative and well-written response based on the context above.
         """
         
@@ -347,4 +349,3 @@ enum AIError: LocalizedError {
         }
     }
 }
-

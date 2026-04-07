@@ -8,15 +8,20 @@ class NodeCanvasViewModel: ObservableObject {
     @Published var draggingNodeId: UUID?
     @Published var dragOffset: CGSize = .zero
     @Published var linkingFromNodeId: UUID?
+    @Published var hoveredLinkTargetId: UUID?
     @Published var isLinkingMode: Bool = false
     @Published var currentBookURL: URL?
     @Published var bookTitle: String = "Untitled Book"
     @Published var hasUnsavedChanges: Bool = false
     @Published var isAutoSaving: Bool = false
+    @Published var saveStatusMessage: String = "New draft not yet saved"
     
-    private var autoSaveTimer: Timer?
+    private var periodicAutoSaveTimer: Timer?
     private var autoSaveTask: Task<Void, Never>?
-    private let autoSaveDelay: TimeInterval = 3.0 // Auto-save 3 seconds after last change
+    private var changeRevision: Int = 0
+    private var recoverySessionID: UUID = UUID()
+    private let autoSaveDelay: TimeInterval = 3.0
+    private let periodicAutoSaveInterval: TimeInterval = 30.0
     
     var selectedNode: Node? {
         guard let selectedNodeId = selectedNodeId else { return nil }
@@ -41,9 +46,8 @@ class NodeCanvasViewModel: ObservableObject {
     
     func deleteNode(_ nodeId: UUID) {
         nodes.removeAll { $0.id == nodeId }
-        // Remove links to this node from other nodes
-        for i in nodes.indices {
-            nodes[i].linkedNodeIds.remove(nodeId)
+        for index in nodes.indices {
+            nodes[index].linkedNodeIds.remove(nodeId)
         }
         if selectedNodeId == nodeId {
             selectedNodeId = nil
@@ -53,53 +57,78 @@ class NodeCanvasViewModel: ObservableObject {
     
     func updateNode(_ nodeId: UUID, title: String? = nil, content: String? = nil, aiResults: String? = nil) {
         guard let index = nodes.firstIndex(where: { $0.id == nodeId }) else { return }
-        if let title = title {
+        
+        if let title, nodes[index].title != title {
             nodes[index].title = title
             markAsChanged()
         }
-        if let content = content {
+        
+        if let content, nodes[index].content != content {
             nodes[index].content = content
             markAsChanged()
         }
-        if let aiResults = aiResults {
+        
+        if let aiResults, nodes[index].aiResults != aiResults {
             nodes[index].aiResults = aiResults
             markAsChanged()
         }
+    }
+    
+    func updateTemplateValue(for nodeId: UUID, key: String, value: String) {
+        guard let index = nodes.firstIndex(where: { $0.id == nodeId }) else { return }
+        
+        let normalizedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        let currentValue = nodes[index].templateValues[key] ?? ""
+        
+        if normalizedValue.isEmpty {
+            guard nodes[index].templateValues.removeValue(forKey: key) != nil else { return }
+            markAsChanged()
+            return
+        }
+        
+        guard currentValue != normalizedValue else { return }
+        nodes[index].templateValues[key] = normalizedValue
+        markAsChanged()
     }
     
     func selectNode(_ nodeId: UUID?) {
         selectedNodeId = nodeId
         if !isLinkingMode {
             linkingFromNodeId = nil
+            hoveredLinkTargetId = nil
         }
     }
     
     func toggleLinkingMode() {
         isLinkingMode.toggle()
-        if !isLinkingMode {
+        if isLinkingMode {
+            linkingFromNodeId = selectedNodeId
+            hoveredLinkTargetId = nil
+        } else {
             linkingFromNodeId = nil
+            hoveredLinkTargetId = nil
         }
     }
     
     func handleNodeClick(_ nodeId: UUID) {
         if isLinkingMode {
             if let fromId = linkingFromNodeId {
-                // Complete linking
                 if fromId != nodeId {
                     guard let fromIndex = nodes.firstIndex(where: { $0.id == fromId }) else {
                         linkingFromNodeId = nil
+                        hoveredLinkTargetId = nil
                         return
                     }
                     nodes[fromIndex].link(to: nodeId)
                     markAsChanged()
                 }
                 linkingFromNodeId = nil
+                hoveredLinkTargetId = nil
             } else {
-                // Start linking
                 linkingFromNodeId = nodeId
+                hoveredLinkTargetId = nil
             }
         } else {
-            // Normal selection
             selectNode(nodeId)
         }
     }
@@ -115,14 +144,20 @@ class NodeCanvasViewModel: ObservableObject {
             return "No node selected. Select a node to generate context-aware prompts."
         }
         
-        var context = "Selected Node: \(selectedNode.title) (\(selectedNode.category.rawValue))\n"
+        var context = "Selected Node: \(selectedNode.title) (\(selectedNode.category.displayName))\n"
         context += "Content: \(selectedNode.content.isEmpty ? "No content yet" : selectedNode.content)\n\n"
+        context += templateContext(for: selectedNode)
         
         if !selectedNode.linkedNodeIds.isEmpty {
             context += "Linked Nodes:\n"
             for linkedId in selectedNode.linkedNodeIds {
                 if let linkedNode = nodes.first(where: { $0.id == linkedId }) {
-                    context += "- \(linkedNode.title) (\(linkedNode.category.rawValue)): \(linkedNode.content.isEmpty ? "No content" : linkedNode.content)\n"
+                    context += "- \(linkedNode.title) (\(linkedNode.category.displayName))\n"
+                    context += "  Content: \(linkedNode.content.isEmpty ? "No content" : linkedNode.content)\n"
+                    let linkedTemplateContext = templateContext(for: linkedNode, indent: "  ")
+                    if !linkedTemplateContext.isEmpty {
+                        context += linkedTemplateContext
+                    }
                 }
             }
         }
@@ -135,18 +170,40 @@ class NodeCanvasViewModel: ObservableObject {
         return nodes.filter { node.linkedNodeIds.contains($0.id) }
     }
     
-    func loadBook(_ book: Book) {
+    func loadBook(_ book: Book, from url: URL? = nil) {
+        cancelScheduledAutoSave()
         nodes = book.nodes
-        bookTitle = book.title
+        currentBookURL = url
+        bookTitle = url?.deletingPathExtension().lastPathComponent ?? book.title
         selectedNodeId = nil
+        linkingFromNodeId = nil
+        isLinkingMode = false
         hasUnsavedChanges = false
+        changeRevision = 0
+        recoverySessionID = UUID()
+        saveStatusMessage = url == nil ? "Draft loaded" : "Opened \(bookTitle)"
+    }
+    
+    func loadRecoveredSnapshot(_ snapshot: RecoverySnapshot) {
+        cancelScheduledAutoSave()
+        nodes = snapshot.book.nodes
+        currentBookURL = snapshot.sourceBookURL
+        bookTitle = snapshot.sourceBookURL?.deletingPathExtension().lastPathComponent ?? snapshot.book.title
+        selectedNodeId = nil
+        linkingFromNodeId = nil
+        isLinkingMode = false
+        hasUnsavedChanges = true
+        changeRevision = 0
+        recoverySessionID = snapshot.sessionID
+        saveStatusMessage = "Recovered draft from \(Self.formattedTime(snapshot.capturedAt))"
     }
     
     func createBook() -> Book {
-        return Book(title: bookTitle, nodes: nodes)
+        Book(title: bookTitle, nodes: nodes)
     }
     
     func newBook() {
+        cancelScheduledAutoSave()
         nodes = []
         selectedNodeId = nil
         linkingFromNodeId = nil
@@ -154,104 +211,163 @@ class NodeCanvasViewModel: ObservableObject {
         currentBookURL = nil
         bookTitle = "Untitled Book"
         hasUnsavedChanges = false
+        changeRevision = 0
+        recoverySessionID = UUID()
+        saveStatusMessage = "New draft not yet saved"
     }
     
     func markAsChanged() {
+        changeRevision += 1
         hasUnsavedChanges = true
+        saveStatusMessage = currentBookURL == nil
+            ? "Changes pending recovery"
+            : "Changes pending auto-save"
         scheduleAutoSave()
     }
     
-    private func scheduleAutoSave() {
-        // Cancel existing timer
-        autoSaveTimer?.invalidate()
-        autoSaveTask?.cancel()
-        
-        // Schedule new auto-save after delay
-        autoSaveTimer = Timer.scheduledTimer(withTimeInterval: autoSaveDelay, repeats: false) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                await self?.performAutoSave()
-            }
-        }
+    func flushPendingAutosave() {
+        cancelScheduledAutoSave()
+        performAutoSave()
     }
     
-    func performAutoSave() async {
-        // Don't auto-save if there are no changes
-        guard hasUnsavedChanges else { return }
+    func saveBook(to url: URL) throws {
+        cancelScheduledAutoSave()
+        let previousURL = currentBookURL
+        let fileName = url.deletingPathExtension().lastPathComponent
+        let book = Book(title: fileName, nodes: nodes)
         
-        // Don't auto-save if we're in the middle of another save
-        guard !isAutoSaving else { return }
+        try BookService.shared.saveBook(book, to: url)
         
-        isAutoSaving = true
+        currentBookURL = url
+        bookTitle = fileName
+        hasUnsavedChanges = false
+        saveStatusMessage = "Saved \(Self.formattedTime(Date()))"
         
-        do {
-            let book = createBook()
-            
-            // Determine save location
-            let saveURL: URL
-            if let existingURL = currentBookURL {
-                // Save to existing location
-                saveURL = existingURL
-            } else {
-                // Save to auto-save location
-                saveURL = getAutoSaveURL()
-                currentBookURL = saveURL
-                // Update title from filename
-                if let fileName = saveURL.deletingPathExtension().lastPathComponent as String? {
-                    bookTitle = fileName
-                }
-            }
-            
-            // Perform save
-            try await Task.detached {
-                try BookService.shared.saveBook(book, to: saveURL)
-            }.value
-            
-            // Mark as saved
-            hasUnsavedChanges = false
-            
-        } catch {
-            // Silently fail auto-save - don't interrupt user
-            print("Auto-save failed: \(error.localizedDescription)")
+        try? RecoveryService.shared.deleteSnapshot(for: previousURL, sessionID: recoverySessionID)
+        if previousURL != url {
+            try? RecoveryService.shared.deleteSnapshot(for: url, sessionID: recoverySessionID)
         }
-        
-        isAutoSaving = false
-    }
-    
-    private func getAutoSaveURL() -> URL {
-        // Get or create auto-save directory
-        let fileManager = FileManager.default
-        let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let autoSaveDir = documentsURL.appendingPathComponent("Odyssey AutoSave", isDirectory: true)
-        
-        // Create directory if it doesn't exist
-        if !fileManager.fileExists(atPath: autoSaveDir.path) {
-            try? fileManager.createDirectory(at: autoSaveDir, withIntermediateDirectories: true)
-        }
-        
-        // Generate filename from book title (sanitized)
-        let sanitizedTitle = bookTitle
-            .replacingOccurrences(of: "/", with: "-")
-            .replacingOccurrences(of: ":", with: "-")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        let fileName = sanitizedTitle.isEmpty ? "Untitled Book" : sanitizedTitle
-        return autoSaveDir.appendingPathComponent("\(fileName).book")
     }
     
     func startAutoSave() {
-        // Start periodic auto-save (every 30 seconds as backup)
-        autoSaveTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
+        periodicAutoSaveTimer?.invalidate()
+        periodicAutoSaveTimer = Timer.scheduledTimer(withTimeInterval: periodicAutoSaveInterval, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
-                await self?.performAutoSave()
+                self?.performAutoSave()
             }
         }
     }
     
     func stopAutoSave() {
-        autoSaveTimer?.invalidate()
-        autoSaveTimer = nil
+        periodicAutoSaveTimer?.invalidate()
+        periodicAutoSaveTimer = nil
+        cancelScheduledAutoSave()
+    }
+    
+    func performAutoSave() {
+        guard hasUnsavedChanges else { return }
+        guard !isAutoSaving else { return }
+        
+        autoSaveTask = nil
+        isAutoSaving = true
+        let revisionBeingSaved = changeRevision
+        
+        do {
+            let outcome = try persist(book: createBook(), sourceURL: currentBookURL)
+            
+            if outcome.savedToBook, revisionBeingSaved == changeRevision {
+                hasUnsavedChanges = false
+            }
+            
+            saveStatusMessage = outcome.savedToBook
+                ? "Auto-saved \(Self.formattedTime(outcome.savedAt))"
+                : "Recovery updated \(Self.formattedTime(outcome.savedAt))"
+        } catch {
+            saveStatusMessage = "Recovery failed. Please save manually."
+            print("Auto-save failed: \(error.localizedDescription)")
+        }
+        
+        isAutoSaving = false
+        
+        if revisionBeingSaved != changeRevision {
+            scheduleAutoSave()
+        }
+    }
+    
+    private func scheduleAutoSave() {
+        cancelScheduledAutoSave()
+        let delayInNanoseconds = UInt64(autoSaveDelay * 1_000_000_000)
+        
+        autoSaveTask = Task { [weak self] in
+            do {
+                try await Task.sleep(nanoseconds: delayInNanoseconds)
+            } catch {
+                return
+            }
+            
+            await MainActor.run {
+                self?.performAutoSave()
+            }
+        }
+    }
+    
+    private func cancelScheduledAutoSave() {
         autoSaveTask?.cancel()
         autoSaveTask = nil
     }
+    
+    private func persist(book: Book, sourceURL: URL?) throws -> PersistOutcome {
+        var recoveryError: Error?
+        var snapshot: RecoverySnapshot?
+        
+        do {
+            snapshot = try RecoveryService.shared.saveSnapshot(
+                book: book,
+                sourceBookURL: sourceURL,
+                sessionID: recoverySessionID
+            )
+        } catch {
+            recoveryError = error
+        }
+        
+        if let sourceURL {
+            try BookService.shared.saveBook(book, to: sourceURL)
+            try? RecoveryService.shared.deleteSnapshot(for: sourceURL, sessionID: recoverySessionID)
+            return PersistOutcome(savedAt: Date(), savedToBook: true)
+        }
+        
+        if let snapshot {
+            return PersistOutcome(savedAt: snapshot.capturedAt, savedToBook: false)
+        }
+        
+        throw recoveryError ?? NSError(
+            domain: "NodeCanvasViewModel",
+            code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "Unable to persist recovery snapshot."]
+        )
+    }
+    
+    private static func formattedTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter.string(from: date)
+    }
+    
+    private func templateContext(for node: Node, indent: String = "") -> String {
+        let filledFields = node.filledTemplateFields
+        guard !filledFields.isEmpty else { return "" }
+        
+        var context = "\(indent)\(node.category.displayName) Template:\n"
+        for field in filledFields {
+            context += "\(indent)- \(field.field.label): \(field.value)\n"
+        }
+        context += "\n"
+        return context
+    }
 }
 
+private struct PersistOutcome {
+    let savedAt: Date
+    let savedToBook: Bool
+}
