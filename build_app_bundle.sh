@@ -10,6 +10,7 @@ BUILD_DIR=".build/release"
 CONTENTS_DIR="${APP_BUNDLE}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
+SIGN_IDENTITY="${SIGN_IDENTITY:-}"
 
 echo "Building ${APP_NAME}..."
 
@@ -102,9 +103,25 @@ cat > "${CONTENTS_DIR}/Info.plist" << EOF
 </plist>
 EOF
 
+if [ -z "${SIGN_IDENTITY}" ]; then
+    DEFAULT_IDENTITY=$(security find-identity -v -p codesigning 2>/dev/null | grep "Apple Development:" | head -n 1 | sed -E 's/.*"(.+)"/\1/')
+    if [ -n "${DEFAULT_IDENTITY}" ]; then
+        SIGN_IDENTITY="${DEFAULT_IDENTITY}"
+    else
+        SIGN_IDENTITY="-"
+    fi
+fi
+
+echo "Signing app bundle with: ${SIGN_IDENTITY}"
+codesign --force --deep --sign "${SIGN_IDENTITY}" "${APP_BUNDLE}"
+
+if [ $? -ne 0 ]; then
+    echo "Code signing failed!"
+    exit 1
+fi
+
 echo "App bundle created: ${APP_BUNDLE} (${VERSION})"
 echo "You can now run it with: open ${APP_BUNDLE}"
 echo "Or double-click it in Finder!"
-
 
 

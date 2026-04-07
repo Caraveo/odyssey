@@ -6,6 +6,20 @@
 # macOS
 .DS_Store
 *.app/
+!Odyssey.app/
+Odyssey.app/*
+!Odyssey.app/Contents/
+Odyssey.app/Contents/*
+!Odyssey.app/Contents/Info.plist
+!Odyssey.app/Contents/MacOS/
+Odyssey.app/Contents/MacOS/*
+!Odyssey.app/Contents/MacOS/Odyssey
+!Odyssey.app/Contents/Resources/
+Odyssey.app/Contents/Resources/*
+!Odyssey.app/Contents/Resources/Odyssey.icns
+!Odyssey.app/Contents/_CodeSignature/
+Odyssey.app/Contents/_CodeSignature/*
+!Odyssey.app/Contents/_CodeSignature/CodeResources
 
 # Icons (keep source PNG, ignore generated files)
 *.iconset/
@@ -14,4 +28,3 @@
 # Xcode
 *.swiftpm
 xcuserdata/
-
